@@ -87,7 +87,7 @@ public class GameJava extends PApplet{
 		acceleration = new PVector(0, 0, 0);
 		*/
 		gravity = new PVector(0.0f, 0.0f, 0.0f);
-		cyliderPos = new ArrayList<>();
+		cyliderPos = new ArrayList<Cylinder>();
 		f = createFont("Arial",16,true); 
 		
 	}
