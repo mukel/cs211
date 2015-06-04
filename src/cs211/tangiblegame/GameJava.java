@@ -1,7 +1,7 @@
 package cs211.tangiblegame;
 /** 
-* @author Montero Aimee
-* @author Peterssen Alfonso
+* @author Montero Aimee 221053
+* @author Peterssen Alfonso 221982
 * @author Mbanga Ndjock Pierre Armel 229047
 */
 import java.awt.Shape;
@@ -32,10 +32,10 @@ public class GameJava extends PApplet{
 	float depth = 800;
 		
 	float boxHeight = 10;
-	float boxWidth = 500;
-	float boxDepth = 500;
+	float boxWidth = 350;
+	float boxDepth = 350;
 	
-	float sphereRadius = 30;
+	float sphereRadius = 15;
 	//float density = 0.002f;
 	//float masa = density * (4/3.0f * PI * (sphereRadio*sphereRadio*sphereRadio));
 	
@@ -63,13 +63,15 @@ public class GameJava extends PApplet{
 	ArrayList<Cylinder> cyliderPos;
 	Mover mover;
 	
-	float cylinderBaseSize = 30;
-	float cylinderHeight = 30;
+	float cylinderBaseSize = 23;
+	float cylinderHeight = 23;
 	int cylinderResolution = 20;
 	
 	PShape cylinder;
 	
 	PFont f;
+	int mySurfaceHeight;
+	PGraphics mySurface;
 	/** 
 	 * This function is called once when the program starts. It
 	 * defines initial environment properties such as screen 
@@ -91,6 +93,9 @@ public class GameJava extends PApplet{
 		cyliderPos = new ArrayList<Cylinder>();
 		f = createFont("Arial",16,true); 
 		
+		mySurfaceHeight = 200;
+		
+		mySurface = createGraphics(width, mySurfaceHeight, P2D);
 	}
 	/** 
 	 * Checks whether the user press a key button. if a key button
@@ -222,17 +227,22 @@ public class GameJava extends PApplet{
 	public void draw()
 	{
 		//camera(-width/2, -5*height/2, 0, boxWidth/2, boxHeight/2, boxDepth/2, 0, 1, 0);
+		background(200);
+		//pushMatrix();
+	
+		drawSurface();
+		image(mySurface, 0, height-mySurfaceHeight);
+				
+		
 		camera(width/2, height/2, depth, width/2, height/2, 0, 0, 1, 0);
+		
 		
 		directionalLight(50, 100, 200, 0, 0,-1);
 		ambientLight(102, 102, 102);
 		
-		background(200);
-		//pushMatrix();
+	
 		
-			
 		translate(width/2, height/2, 0);
-		Cylinder c;
 		if(modeStandar)
 		{
 			tooCloseOfBall = false;
@@ -282,6 +292,14 @@ public class GameJava extends PApplet{
 		  	
 		popMatrix();
 		
+		
+	}
+	public void drawSurface()
+	{
+		
+		mySurface.beginDraw();
+		mySurface.background(238, 223, 204);
+		mySurface.endDraw();
 		
 	}
 	
