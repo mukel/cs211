@@ -29,7 +29,7 @@ public class HScrollbar {
 	 * @param h
 	 *            The height of the bar in pixels
 	 */
-	HScrollbar(PApplet p, float x, float y, float w, float h) {
+	public HScrollbar(PApplet p, float x, float y, float w, float h) {
 		parent = p;
 		barWidth = w;
 		barHeight = h;
@@ -44,7 +44,7 @@ public class HScrollbar {
 	/**
 	 * @brief Updates the state of the scrollbar according to the mouse movement
 	 */
-	void update() {
+	public void update() {
 		if (isMouseOver()) {
 			mouseOver = true;
 		} else {
@@ -99,7 +99,7 @@ public class HScrollbar {
 	/**
 	 * @brief Draws the scrollbar in its current state
 	 */
-	void display() {
+	public void display() {
 		parent.noStroke();
 		parent.fill(204);
 		parent.rect(xPosition, yPosition, barWidth, barHeight);
@@ -117,7 +117,7 @@ public class HScrollbar {
 	 * @return The slider position in the interval [0,1] corresponding to
 	 *         [leftmost position, rightmost position]
 	 */
-	float getPos() {
+	public float getPos() {
 		return (sliderPosition - xPosition) / (barWidth - barHeight);
 	}
 	
@@ -127,7 +127,7 @@ public class HScrollbar {
 	 * @return The slider position in the interval [0,1] corresponding to
 	 *         [leftmost position, rightmost position]
 	 */
-	void setPos(float pos) {
+	public void setPos(float pos) {
 		newSliderPosition = pos * (barWidth - barHeight) + xPosition;
 	}
 }
