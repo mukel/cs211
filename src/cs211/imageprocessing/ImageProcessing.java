@@ -2,11 +2,6 @@
 Aimee Montero 221053
 Alfonso2 Peterssen 228219
 Pierre Mbanga 229047
-
-This is code is tuned to work with a specific set of images,
-it should work on other inputs with some further tweaking.
-
-This is a preliminar/condensed (just working) version, final submission will be properly formatted and commented.
  */
 package cs211.imageprocessing;
 import processing.core.*;

@@ -1,15 +1,11 @@
 package cs211.imageprocessing;
 
-import java.awt.image.ImageProducer;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 
-import processing.core.*;
+public class HoughComparator implements Comparator<Integer> {
 
-class HoughComparator implements Comparator<Integer> {
-    private int [] accumulator;
+    private int[] accumulator;
+
     public HoughComparator(int[] accumulator) {
         this.accumulator = accumulator;
     }
