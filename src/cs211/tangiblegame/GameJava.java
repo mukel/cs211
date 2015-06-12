@@ -4,8 +4,10 @@ package cs211.tangiblegame;
 * @author Peterssen Alfonso 221982
 * @author Mbanga Ndjock Pierre Armel 229047
 */
+import java.awt.Color;
 import java.awt.Shape;
 import java.math.MathContext;
+import java.net.Socket;
 import java.text.Format;
 import java.util.ArrayList;
 import java.util.Vector;
@@ -15,6 +17,7 @@ import javax.swing.Box;
 
 
 import processing.core.*;
+import sun.org.mozilla.javascript.ast.WithStatement;
 public class GameJava extends PApplet{
 	
 	float wheelFactor = 0.5f;
@@ -67,11 +70,22 @@ public class GameJava extends PApplet{
 	float cylinderHeight = 23;
 	int cylinderResolution = 20;
 	
+	
 	PShape cylinder;
 	
+
+	float velocity;
+	float TotalScore;
+	float lastScore;
+	
 	PFont f;
-	int mySurfaceHeight;
+	int mySurfaceHeight = 175;
 	PGraphics mySurface;
+	PGraphics topViw;
+	PGraphics Score;
+	PGraphics barChart;
+	HScrollbar hsb;
+	
 	/** 
 	 * This function is called once when the program starts. It
 	 * defines initial environment properties such as screen 
@@ -84,18 +98,19 @@ public class GameJava extends PApplet{
 		
 		background(250);
 		mover = new Mover();
-		/*
-		location = new PVector(0, -sphereRadius - boxHeight/2f, 0);
-		velocity = new PVector(0, 0, 0);
-		acceleration = new PVector(0, 0, 0);
-		*/
+	
 		gravity = new PVector(0.0f, 0.0f, 0.0f);
 		cyliderPos = new ArrayList<Cylinder>();
 		f = createFont("Arial",16,true); 
 		
-		mySurfaceHeight = 200;
+		
 		
 		mySurface = createGraphics(width, mySurfaceHeight, P2D);
+		topViw = createGraphics(mySurfaceHeight, mySurfaceHeight, P2D);
+		Score = createGraphics(3* mySurfaceHeight / 4, mySurfaceHeight);
+		
+		barChart = createGraphics(width - (7*mySurfaceHeight/4), 3*mySurfaceHeight/4);
+		
 	}
 	/** 
 	 * Checks whether the user press a key button. if a key button
@@ -231,8 +246,16 @@ public class GameJava extends PApplet{
 		//pushMatrix();
 	
 		drawSurface();
-		image(mySurface, 0, height-mySurfaceHeight);
-				
+		image(mySurface, 55, height-mySurfaceHeight - 30);
+		
+		drawTopView();
+		image(topViw, 55, height - mySurfaceHeight- 30);
+		
+		drawScore();
+		image(Score, 70 + mySurfaceHeight, height - mySurfaceHeight- 30);
+		
+		drawBarChart();
+		image(barChart, 2*mySurfaceHeight + 70,height - mySurfaceHeight- 25 );
 		
 		camera(width/2, height/2, depth, width/2, height/2, 0, 0, 1, 0);
 		
@@ -302,6 +325,80 @@ public class GameJava extends PApplet{
 		mySurface.endDraw();
 		
 	}
+	public void drawTopView()
+	{
+		topViw.beginDraw();
+		topViw.background(0, 51, 102);
+		PVector location = mover.get2DLocation();
+		
+		PVector newLocation = topViwLocation(location.x, location.y);
+		
+		topViw.fill(152,0,0);
+		float newBallRadius = map(sphereRadius, 0, boxWidth*boxDepth, 0, mySurfaceHeight*mySurfaceHeight);
+		topViw.ellipse(newLocation.x, newLocation.y, 4*newBallRadius, 4*newBallRadius);
+		
+		float newCylinderRadius = map(cylinderBaseSize, 0, boxWidth*boxDepth, 0, mySurfaceHeight*mySurfaceHeight);
+		for(int i = 0; i < cyliderPos.size(); i++)
+		{
+			PVector cylinder = cyliderPos.get(i).cylinderlocation;
+			newLocation = topViwLocation(cylinder.x, cylinder.z);
+			
+			
+			
+			topViw.fill(240);
+			topViw.ellipse(newLocation.x, newLocation.y, 4*newCylinderRadius, 4*newCylinderRadius);
+		}
+	
+		topViw.endDraw();
+	}
+	
+	
+	PVector topViwLocation(float x , float y)
+	{
+		float newX = map(x, -boxWidth/2, boxWidth/2, 0, mySurfaceHeight);
+		float newY = map(y, -boxDepth/2, boxDepth/2, 0, mySurfaceHeight);
+		
+		return new PVector(newX, newY);
+		
+	}
+	
+	void drawScore()
+	{
+		Score.beginDraw();
+		Score.background(238, 223, 204);
+		
+		Score.stroke(255);
+		Score.strokeWeight(3);
+		Score.line(5, 5, Score.width - 5, 5);
+		Score.line(5, 5, 5, Score.height - 5);
+		Score.line(5, Score.height - 5, Score.width - 5, Score.height - 5);
+		Score.line(Score.width - 5, Score.height - 5, Score.width - 5, 5);
+		
+		Score.textSize(13);
+		Score.fill(0);
+		Score.text("Total Score:", 15, 30);
+		Score.text(TotalScore, 20, 45);
+		
+		
+		Score.text("Velocity:", 15, 80);
+		Score.text(mover.velocity.mag(), 20, 95);
+		
+		
+		Score.text("Last Score:", 15, 130);
+		Score.text(lastScore, 20, 145);
+		
+		
+		Score.endDraw();
+	}
+	void drawBarChart()
+	{
+		barChart.beginDraw();
+		barChart.background(0);
+		
+		barChart.endDraw();
+
+		
+	}
 	
 	/** 
 	 * Provides methods to control physical and 
@@ -315,7 +412,6 @@ public class GameJava extends PApplet{
 	 */
 	class Mover
 	{
-		
 		PVector location;
 		PVector velocity;
 		PVector acceleration;
@@ -383,6 +479,11 @@ public class GameJava extends PApplet{
 			fill(0, 200, 0);
 			sphere(sphereRadius);
 		}
+		
+		PVector get2DLocation()
+		{
+			return new PVector(location.x, location.z, 0);
+		}
 		/** 
 		 * Checks whether the sphere hits an obstacle and apply
 		 * consequent changes in the sphere displacement. That's its loca
@@ -395,11 +496,16 @@ public class GameJava extends PApplet{
 		{
 			if(location.x >= boxWidth/2 - sphereRadius/2 || location.x <= -boxWidth/2 + sphereRadius/2)
 			{
+				lastScore = velocity.mag();
+				TotalScore -= velocity.mag();
 				velocity.x = velocity.x *-0.5f;
 				
 			}
 			if(location.z >= boxDepth/2 - sphereRadius/2 || location.z <= -boxDepth/2 + sphereRadius/2)
 			{
+				lastScore = velocity.mag();
+				TotalScore -= velocity.mag();
+				
 				velocity.z = velocity.z *-0.5f;
 			}
 			
@@ -417,9 +523,9 @@ public class GameJava extends PApplet{
 		{
 			
 			float dist = dist(location.x, location.z,x, z);//n.mag();
-			println("ball posx: "+ location.x + " ball pos y : " + location.z);
-			println("X : " + x + "  Y : " + z);
-			println("dist " + dist + " radio S + radio C : " + (sphereRadius + cylinderBaseSize) );
+			//println("ball posx: "+ location.x + " ball pos y : " + location.z);
+			//println("X : " + x + "  Y : " + z);
+			//println("dist " + dist + " radio S + radio C : " + (sphereRadius + cylinderBaseSize) );
 			
 			return (dist > sphereRadius + cylinderBaseSize);
 		}
@@ -436,6 +542,8 @@ public class GameJava extends PApplet{
 				
 				if(dist <= sphereRadius + cylinderBaseSize)
 				{
+					lastScore = velocity.mag();
+					TotalScore += velocity.mag();
 					
 					PVector normalizedN = n.get();
 					normalizedN.normalize();
@@ -623,5 +731,116 @@ public class GameJava extends PApplet{
 	public static void main(String[] args) {
 		PApplet.main(GameJava.class.getName());
 	}
+	class HScrollbar {
+		  float barWidth;  //Bar's width in pixels
+		  float barHeight; //Bar's height in pixels
+		  float xPosition;  //Bar's x position in pixels
+		  float yPosition;  //Bar's y position in pixels
+		  
+		  float sliderPosition, newSliderPosition;    //Position of slider
+		  float sliderPositionMin, sliderPositionMax; //Max and min values of slider
+		  
+		  boolean mouseOver;  //Is the mouse over the slider?
+		  boolean locked;     //Is the mouse clicking and dragging the slider now?
+
+		  /**
+		   * @brief Creates a new horizontal scrollbar
+		   * 
+		   * @param x The x position of the top left corner of the bar in pixels
+		   * @param y The y position of the top left corner of the bar in pixels
+		   * @param w The width of the bar in pixels
+		   * @param h The height of the bar in pixels
+		   */
+		  HScrollbar (float x, float y, float w, float h) {
+		    barWidth = w;
+		    barHeight = h;
+		    xPosition = x;
+		    yPosition = y;
+		    
+		    sliderPosition = xPosition + barWidth/2 - barHeight/2;
+		    newSliderPosition = sliderPosition;
+		    
+		    sliderPositionMin = xPosition;
+		    sliderPositionMax = xPosition + barWidth - barHeight;
+		  }
+
+		  /**
+		   * @brief Updates the state of the scrollbar according to the mouse movement
+		   */
+		  void update() {
+		    if (isMouseOver()) {
+		      mouseOver = true;
+		    }
+		    else {
+		      mouseOver = false;
+		    }
+		    if (mousePressed && mouseOver) {
+		      locked = true;
+		    }
+		    if (!mousePressed) {
+		      locked = false;
+		    }
+		    if (locked) {
+		      newSliderPosition = constrain(mouseX - barHeight/2, sliderPositionMin, sliderPositionMax);
+		    }
+		    if (abs(newSliderPosition - sliderPosition) > 1) {
+		      sliderPosition = sliderPosition + (newSliderPosition - sliderPosition);
+		    }
+		  }
+
+		  /**
+		   * @brief Clamps the value into the interval
+		   * 
+		   * @param val The value to be clamped
+		   * @param minVal Smallest value possible
+		   * @param maxVal Largest value possible
+		   * 
+		   * @return val clamped into the interval [minVal, maxVal]
+		   */
+		  float constrain(float val, float minVal, float maxVal) {
+		    return min(max(val, minVal), maxVal);
+		  }
+
+		  /**
+		   * @brief Gets whether the mouse is hovering the scrollbar
+		   *
+		   * @return Whether the mouse is hovering the scrollbar
+		   */
+		  boolean isMouseOver() {
+		    if (mouseX > xPosition && mouseX < xPosition+barWidth &&
+		      mouseY > yPosition && mouseY < yPosition+barHeight) {
+		      return true;
+		    }
+		    else {
+		      return false;
+		    }
+		  }
+
+		  /**
+		   * @brief Draws the scrollbar in its current state
+		   */ 
+		  void display() {
+		    noStroke();
+		    fill(204);
+		    rect(xPosition, yPosition, barWidth, barHeight);
+		    if (mouseOver || locked) {
+		      fill(0, 0, 0);
+		    }
+		    else {
+		      fill(102, 102, 102);
+		    }
+		    rect(sliderPosition, yPosition, barHeight, barHeight);
+		  }
+
+		  /**
+		   * @brief Gets the slider position
+		   * 
+		   * @return The slider position in the interval [0,1] corresponding to [leftmost position, rightmost position]
+		   */
+		  float getPos() {
+		    return (sliderPosition - xPosition)/(barWidth - barHeight);
+		  }
+		}
+	
 
 }
