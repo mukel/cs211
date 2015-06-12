@@ -5,6 +5,9 @@ Pierre Mbanga 229047
  */
 package cs211.imageprocessing;
 import processing.core.*;
+import processing.video.Capture;
+import processing.video.Movie;
+
 import java.util.*;
 
 public class ImageProcessing extends PApplet {
@@ -12,19 +15,75 @@ public class ImageProcessing extends PApplet {
 	// generated in hough() function
 	static PImage houghImg;
 
-	public void setup() {
-		PImage img = loadImage("./images/board4.jpg");
-		img.resize(400, 300);
 
+	Capture webcam;
+	Movie video;
+	/*In the setup()*/
+	//cam = new Capture(this, cameras[63]);
+	//cam.start();
+
+	public void setup() {
+		video = new Movie(this, "./wg_gdo_1.mpg"); //Put the video in the same directory
+		System.out.println(video.available());
+
+		//video.loop();
+		System.out.println("Duration: " + video.duration());
+/*
+		String[] cameras = Capture.list();
+
+		if (cameras.length == 0) {
+			println("There are no cameras available for capture.");
+			exit();
+		} else {
+			println("Available cameras:");
+			for (int i = 0; i < cameras.length; i++) {
+				println(cameras[i]);
+			}
+
+			// The camera can be initialized directly using an
+			// element from the array returned by list():
+			webcam = new Capture(this, cameras[cameras.length - 1]);
+			webcam.start();
+		}
+		*/
+
+		//size(800, 600);
 		size(1200, 300);
-		noLoop();
+	}
+
+	// Called every time a new frame is available to read
+	void movieEvent(Movie m) {
+		m.read();
+	}
+
+	public void draw() {
+/*
+		if (webcam.available() == true) {
+			webcam.read();
+		} else
+			return ;
+*/
+//		PImage img = loadImage("./images/board4.jpg");
+
+		//System.out.println(video.isLoaded());
+		if (video.available()) {
+			//System.out.println("DOOOOONNEEEEEEE");
+			video.read();
+		} else
+			return ;
+
+
+		PImage img = video.get();
+
+		img.resize(400, 300);
+		//noLoop();
 
 		background(0);
 
 		PImage filtered = greenFilter(img,
-			0.34f * 255, 0.54f * 255,
-			100, 255,
-			0, 255
+				0.34f * 255, 0.54f * 255,
+				100, 255,
+				0, 255
 		);
 
 		// Double gaussian blur to get rid of the isolated dots (noise)
@@ -77,6 +136,7 @@ public class ImageProcessing extends PApplet {
 
 		// Preprocessed image
 		image(source, 800, 0);
+
 	}
 
 	PImage gaussianBlur(PImage image) {
