@@ -1,6 +1,10 @@
 package cs211.imageprocessing;
 
+import cs211.HScrollbar;
 import processing.core.*;
+
+import java.util.Collections;
+import java.util.List;
 
 public class Main extends PApplet {
 	PImage img;
@@ -128,6 +132,31 @@ public class Main extends PApplet {
 		
 		System.out.println(thresholdBar1.getPos());
 		System.out.println(thresholdBar2.getPos());
+	}
+
+	public static List<PVector> sortCorners(List<PVector> quad){
+		// Sort corners so that they are ordered clockwise
+		PVector a = quad.get(0);
+		PVector b = quad.get(2);
+		PVector center = new PVector((a.x+b.x)/2,(a.y+b.y)/2);
+		Collections.sort(quad, new CWComparator(center));
+
+		// TODO:
+		// Re-order the corners so that the first one is the closest to the
+		// origin (0,0) of the image.
+		//
+		// You can use Collections.rotate to shift the corners inside the quad.
+
+		PVector origin  = new PVector(0, 0);
+
+		int closestIndex = 0;
+		for (int i = 0; i < quad.size(); ++i)
+			if (quad.get(i).dist(origin) < quad.get(closestIndex).dist(origin))
+				closestIndex = i;
+
+		Collections.rotate(quad, closestIndex);
+
+		return quad;
 	}
 
 	public static void main(String[] args) {
