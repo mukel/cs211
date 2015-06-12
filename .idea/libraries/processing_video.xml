@@ -1,0 +1,11 @@
+<component name="libraryTable">
+  <library name="processing-video">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/Applications/processing-2.2.1/modes/java/libraries/video/library/video.jar!/" />
+      <root url="jar://$USER_HOME$/Applications/processing-2.2.1/modes/java/libraries/video/library/jna.jar!/" />
+      <root url="jar://$USER_HOME$/Applications/processing-2.2.1/modes/java/libraries/video/library/gstreamer-java.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
