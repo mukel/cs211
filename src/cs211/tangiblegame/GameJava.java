@@ -109,7 +109,7 @@ public class GameJava extends PApplet{
 		ball = new Ball();
 		
 
-		lightHouse = loadShape("Lighthouse_7.obj");
+		lightHouse = loadShape("models/Lighthouse_7.obj");
 		lightHouse.rotateX(PI);
 		
 		gravity = new PVector(0.0f, 0.0f, 0.0f);
@@ -119,10 +119,11 @@ public class GameJava extends PApplet{
 		
 		
 		mySurface = createGraphics(width, mySurfaceHeight, P2D);
-		topViw = createGraphics(mySurfaceHeight, mySurfaceHeight, P2D);
-		Score = createGraphics(3* mySurfaceHeight / 4, mySurfaceHeight);
+		topViw = createGraphics(mySurfaceHeight - 10, mySurfaceHeight - 10, P2D);
 		
-		barChart = createGraphics(width - (7*mySurfaceHeight/4), 3*mySurfaceHeight/4);
+		Score = createGraphics(3* mySurfaceHeight / 4, mySurfaceHeight - 10);
+		
+		barChart = createGraphics(width - topViw.width - Score.width - 45 , 3*mySurfaceHeight/4 + 5);
 		
 		scoreBoxPos = 0;
 		scoreBoxHeight = 5f;
@@ -132,8 +133,8 @@ public class GameJava extends PApplet{
 		
 		//image(barChart, 2*mySurfaceHeight + 70,height - mySurfaceHeight- 25 );
 		
-		scrollH = new HScrollbar(false, 2*mySurfaceHeight + 70, height - mySurfaceHeight + 10 , barChart.width/2, 20);
-		scrollV = new HScrollbar(true, 2*mySurfaceHeight + 45, height - mySurfaceHeight - 126, 20, barChart.height);
+		scrollH = new HScrollbar(false, topViw.width + Score.width + 35, height - 130 , barChart.width/2, 20);
+		scrollV = new HScrollbar(true,  topViw.width + Score.width + 10, height - mySurfaceHeight - 95, 20, barChart.height);
 		
 		
 		bars = new ArrayList<>();
@@ -273,13 +274,13 @@ public class GameJava extends PApplet{
 		//pushMatrix();
 	
 		drawSurface();
-		image(mySurface, 55, height-mySurfaceHeight - 30);
+		image(mySurface, 0, height - mySurfaceHeight);
 		
 		drawTopView();
-		image(topViw, 55, height - mySurfaceHeight- 30);
+		image(topViw, 5, height - mySurfaceHeight + 5);
 		
 		drawScore();
-		image(Score, 70 + mySurfaceHeight, height - mySurfaceHeight- 30);
+		image(Score, topViw.width + 5, height - mySurfaceHeight + 5);
 		
 		
 		scrollH.update();
@@ -295,14 +296,16 @@ public class GameJava extends PApplet{
 		scoreLimit = 2500/(scrollV.getPos()+0.2f);
 		
 		drawBarChart();
-		image(barChart, 2*mySurfaceHeight + 70,height - mySurfaceHeight- 25 );
+		image(barChart, topViw.width + Score.width + 35 ,height - mySurfaceHeight + 5);
 		
+		/*
 		camera(width/2, height/2, depth, width/2, height/2, 0, 0, 1, 0);
 			
 		directionalLight(50, 100, 200, 0, 0,-1);
 		ambientLight(102, 102, 102);
-		
+		*/
 	
+		pushMatrix();
 		
 		translate(width/2, height/2, 0);
 		if(modeStandar)
@@ -318,15 +321,13 @@ public class GameJava extends PApplet{
 			fill(255);
 			box(boxWidth, boxHeight, boxDepth);
 		
-			pushMatrix();
-		
+			
 			ball.update();
 			ball.checkEdge();
 			ball.checkCylinders();
 			
 			//mover.display();
 		
-			popMatrix();
 		}
 		
 		else
@@ -340,13 +341,10 @@ public class GameJava extends PApplet{
 		
 		for(int i = 0; i < cyliderPos.size(); i++)
 		{
-			pushMatrix();
-			
+		
 			cyliderPos.get(i).display();
-			popMatrix();
 		}
 		
-		pushMatrix();
 		
 		ball.display();
 		popMatrix();
@@ -783,7 +781,7 @@ public class GameJava extends PApplet{
 			
 			if(modeStandar)
 			{
-				translate(shapelocation.x, shapelocation.y - boxHeight, shapelocation.z );
+				translate(shapelocation.x, shapelocation.y , shapelocation.z );
 				
 				noStroke();
 				//rotateX(PI);
@@ -892,8 +890,8 @@ public class GameJava extends PApplet{
 		   * @return Whether the mouse is hovering the scrollbar
 		   */
 		  boolean isMouseOver() {
-		    if (mouseX + 30 > xPosition && mouseX < xPosition + barWidth &&
-		      mouseY  - 25 > yPosition && mouseY - 25 < yPosition+barHeight) {
+		    if (mouseX  > xPosition && mouseX < xPosition + barWidth &&
+		      mouseY  > yPosition && mouseY  < yPosition+barHeight) {
 		      return true;
 		    }
 		    else {
