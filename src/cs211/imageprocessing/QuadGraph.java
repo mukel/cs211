@@ -55,10 +55,7 @@ public class QuadGraph {
         int x = (int) ((r2 * sin_t1 - r1 * sin_t2) / denom);
         int y = (int) ((-r2 * cos_t1 + r1 * cos_t2) / denom);
 
-        if (0 <= x && 0 <= y && width >= x && height >= y)
-            return true;
-        else
-            return false;
+        return 0 <= x && 0 <= y && width >= x && height >= y;
 
     }
 
@@ -69,13 +66,16 @@ public class QuadGraph {
                 findNewCycles(new int[]{graph[i][j]});
             }
         }
+        /*
         for (int[] cy : cycles) {
+        	
             String s = "" + cy[0];
             for (int i = 1; i < cy.length; i++) {
                 s += "," + cy[i];
             }
             System.out.println(s);
         }
+        */
         return cycles;
     }
 
@@ -223,8 +223,8 @@ public class QuadGraph {
         if ((i1 > 0 && i2 > 0 && i3 > 0 && i4 > 0)
                 || (i1 < 0 && i2 < 0 && i3 < 0 && i4 < 0))
             return true;
-        else
-            System.out.println("Eliminating non-convex quad");
+        //else
+           // System.out.println("Eliminating non-convex quad");
         return false;
 
     }
@@ -250,7 +250,7 @@ public class QuadGraph {
 
         boolean valid = (area < max_area && area > min_area);
 
-        if (!valid) System.out.println("Area out of range");
+        //if (!valid) System.out.println("Area out of range");
 
         return valid;
     }
@@ -262,7 +262,7 @@ public class QuadGraph {
     public static boolean nonFlatQuad(PVector c1, PVector c2, PVector c3, PVector c4) {
 
         // cos(70deg) ~= 0.3
-        float min_cos = 0.44f;
+        float min_cos = 0.8f;
 
         PVector v21 = PVector.sub(c1, c2);
         PVector v32 = PVector.sub(c2, c3);
@@ -277,7 +277,7 @@ public class QuadGraph {
         if (cos1 < min_cos && cos2 < min_cos && cos3 < min_cos && cos4 < min_cos)
             return true;
         else {
-            System.out.println("Flat quad" + cos1 + " " + cos2 + " " + cos3 + " " + cos4);
+            //System.out.println("Flat quad" + cos1 + " " + cos2 + " " + cos3 + " " + cos4);
             return false;
         }
     }

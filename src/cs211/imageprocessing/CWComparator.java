@@ -3,9 +3,7 @@ package cs211.imageprocessing;
 
 import processing.core.PVector;
 
-import java.util.Collections;
 import java.util.Comparator;
-import java.util.List;
 
 public class CWComparator implements Comparator<PVector> {
     PVector center;

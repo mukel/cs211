@@ -12,7 +12,6 @@ public class HoughComparator implements Comparator<Integer> {
 
     @Override
     public int compare(Integer l1, Integer l2) {
-        // correct implementation of compare
         int cmp = -Integer.compare(accumulator[l1], accumulator[l2]);
         return (cmp != 0) ? cmp : l1.compareTo(l2);
     }

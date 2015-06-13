@@ -4,145 +4,52 @@ Alfonso2 Peterssen 228219
 Pierre Mbanga 229047
  */
 package cs211.imageprocessing;
-import processing.core.*;
+import processing.core.PApplet;
+import processing.core.PVector;
 import processing.video.Capture;
+
+import static processing.core.PApplet.*;
+import processing.core.PImage;
 import processing.video.Movie;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Random;
 
-public class ImageProcessing extends PApplet {
+public class ImageProcessing {
 
-	// generated in hough() function
-	static PImage houghImg;
+	private PApplet parent;
 
+	public ImageProcessing(PApplet parent) {
+		this.parent = parent;
+	}
 
-	Capture webcam;
-	Movie video;
-	/*In the setup()*/
-	//cam = new Capture(this, cameras[63]);
-	//cam.start();
-
-	public void setup() {
-		video = new Movie(this, "./wg_gdo_1.mpg"); //Put the video in the same directory
-		System.out.println(video.available());
-
-		//video.loop();
-		System.out.println("Duration: " + video.duration());
-/*
-		String[] cameras = Capture.list();
-
-		if (cameras.length == 0) {
-			println("There are no cameras available for capture.");
-			exit();
-		} else {
-			println("Available cameras:");
-			for (int i = 0; i < cameras.length; i++) {
-				println(cameras[i]);
+	public PImage convoluteOf(PImage image, float[][] kernel, float weight) {
+		PImage result = parent.createImage(image.width, image.height, ALPHA);
+		for (int y = 0; y < image.height; ++y)
+			for (int x = 0; x < image.width; ++x) {
+				float sum = 0;
+				for (int dx = -1; dx <= 1; ++dx)
+					for (int dy = -1; dy <= 1; ++dy) {
+						int nx = x + dx;
+						int ny = y + dy;
+						if (nx < 0 || nx >= image.width || ny < 0
+								|| ny >= image.height)
+							continue;
+						sum += parent.brightness(image.pixels[ny * image.width + nx])
+								* kernel[dy + 1][dx + 1];
+					}
+				result.pixels[y * image.width + x] = parent.color(sum / weight);
 			}
-
-			// The camera can be initialized directly using an
-			// element from the array returned by list():
-			webcam = new Capture(this, cameras[cameras.length - 1]);
-			webcam.start();
-		}
-		*/
-
-		//size(800, 600);
-		size(1200, 300);
+		return result;
 	}
 
-	// Called every time a new frame is available to read
-	void movieEvent(Movie m) {
-		m.read();
-	}
 
-	public void draw() {
-/*
-		if (webcam.available() == true) {
-			webcam.read();
-		} else
-			return ;
-*/
-//		PImage img = loadImage("./images/board4.jpg");
-
-		//System.out.println(video.isLoaded());
-		if (video.available()) {
-			//System.out.println("DOOOOONNEEEEEEE");
-			video.read();
-		} else
-			return ;
-
-
-		PImage img = video.get();
-
-		img.resize(400, 300);
-		//noLoop();
-
-		background(0);
-
-		PImage filtered = greenFilter(img,
-				0.34f * 255, 0.54f * 255,
-				100, 255,
-				0, 255
-		);
-
-		// Double gaussian blur to get rid of the isolated dots (noise)
-		// this also reduces precision, but improves line detection accuracy
-		PImage blurred = gaussianBlur(gaussianBlur(filtered));
-		PImage noiseless = intensityFilter(blurred, 200, 255);
-		PImage source = sobel(noiseless);
-
-		List<PVector> lines = hough(source, 6);
-		QuadGraph qg = new QuadGraph();
-		qg.build(lines, width, height);
-		List<int[]> quads = qg.findCycles();
-
-		// Filter malformed quads
-		List<int[]> bestQuads = new ArrayList<>();
-		for (int[] quad : quads) {
-			PVector line1 = lines.get(quad[0]);
-			PVector line2 = lines.get(quad[1]);
-			PVector line3 = lines.get(quad[2]);
-			PVector line4 = lines.get(quad[3]);
-
-			PVector c1 = intersection(line1, line2);
-			PVector c2 = intersection(line2, line3);
-			PVector c3 = intersection(line3, line4);
-			PVector c4 = intersection(line4, line1);
-
-			if (QuadGraph.isConvex(c1, c2, c3, c4) &&
-					QuadGraph.nonFlatQuad(c1, c2, c3, c4) &&
-					QuadGraph.validArea(c1, c2, c3, c4, width * height, width * height / 100)) {
-				bestQuads.add(quad);
-			}
-		}
-
-		// Original image
-		image(img, 0, 0);
-
-		if (bestQuads.size() > 0) {
-			ArrayList<PVector> bestLines = new ArrayList<>();
-			for (int index : bestQuads.get(0))
-				bestLines.add(lines.get(index));
-			drawLines(bestLines);
-			drawIntersections(bestLines);
-			drawQuads(Collections.singletonList(bestQuads.get(0)), lines);
-		}
-
-		// Hough accumulator
-		houghImg.resize(400, 300);
-		if (houghImg != null)
-			image(houghImg, 400, 0);
-
-		// Preprocessed image
-		image(source, 800, 0);
-
-	}
-
-	PImage gaussianBlur(PImage image) {
+	public PImage gaussianBlur(PImage image) {
 		final float[][] kernel = {{9, 12, 9}, {12, 15, 12}, {9, 12, 9}};
 		final float weight = 99;
-		PImage result = createImage(image.width, image.height, ALPHA);
+		PImage result = parent.createImage(image.width, image.height, ALPHA);
 		for (int y = 1; y + 1 < image.height; ++y)
 			for (int x = 1; x + 1 < image.width; ++x) {
 				float sum = 0;
@@ -152,18 +59,18 @@ public class ImageProcessing extends PApplet {
 						int ny = y + dy;
 						if (nx < 0 || nx >= image.width || ny < 0 || ny >= image.height)
 							continue;
-						sum += brightness(image.pixels[ny * image.width + nx]) * kernel[dy + 1][dx + 1];
+						sum += parent.brightness(image.pixels[ny * image.width + nx]) * kernel[dy + 1][dx + 1];
 					}
-				result.pixels[y * image.width + x] = color(sum / weight);
+				result.pixels[y * image.width + x] = parent.color(sum / weight);
 			}
 		return result;
 	}
 
-	PImage sobel(PImage img) {
+	public PImage sobel(PImage img) {
 		final float[][] hSobel = { { 0, 1, 0 }, { 0, 0, 0 }, { 0, -1, 0 } };
 		final float[][] vSobel = { { 0, 0, 0 }, { 1, 0, -1 }, { 0, 0, 0 } };
 		float[] buffer = new float[img.width * img.height];
-		PImage result = createImage(img.width, img.height, ALPHA);
+		PImage result = parent.createImage(img.width, img.height, ALPHA);
 		float upper = 0;
 		for (int y = 1; y + 1 < img.height; ++y)
 			for (int x = 1; x + 1 < img.width; ++x) {
@@ -175,47 +82,24 @@ public class ImageProcessing extends PApplet {
 						int ny = y + dy;
 						if (nx < 0 || nx >= img.width || ny < 0 || ny >= img.height)
 							continue;
-						hsum += brightness(img.pixels[ny * img.width + nx])
+						hsum += parent.brightness(img.pixels[ny * img.width + nx])
 								* hSobel[dy + 1][dx + 1];
-						vsum += brightness(img.pixels[ny * img.width + nx])
+						vsum += parent.brightness(img.pixels[ny * img.width + nx])
 								* vSobel[dy + 1][dx + 1];
 					}
-				float t = (float)Math.sqrt(hsum*hsum + vsum*vsum);
-
-				upper = Math.max(upper, t);
+				float t = sqrt(hsum*hsum + vsum*vsum);
 				buffer[y * img.width + x] = t;
+				upper = max(upper, t);
 			}
 		for (int i = 0; i < img.width * img.height; ++i)
-			result.pixels[i] = (buffer[i] > (int) (upper * 0.3f)) ? color(255) : color(0);
-		return result;
-	}
-	
-	PImage greenFilter(PImage img, float h1, float h2, float s1, float s2, float b1, float b2) {
-		PImage result = createImage(img.width, img.height, ALPHA);
-		for (int i = 0; i < img.width * img.height; ++i) {
-			int c = img.pixels[i];
-			float h = hue(c);
-			float s = saturation(c);
-			float b = brightness(c);
-			result.pixels[i] = (h1 <= h && h <= h2 && s1 <= s && s <= s2 && b1 <= b && b <= b2) ? color(255) : color(0);
-		}
+			result.pixels[i] = (buffer[i] > (int) (upper * 0.3f)) ? parent.color(255) : parent.color(0);
 		return result;
 	}
 
-	PImage intensityFilter(PImage img, float b1, float b2) {
-		PImage result = createImage(img.width, img.height, ALPHA);
-		for (int i = 0; i < img.width * img.height; ++i) {
-			int c = img.pixels[i];
-			float b = brightness(c);
-			result.pixels[i] = (b1 <= b && b <= b2) ? color(255) : color(0);
-		}
-		return result;
-	}
+	static float discretizationStepsPhi = 0.01f;
+	static float discretizationStepsR = 1.5f;
 
-	float discretizationStepsPhi = 0.02f;
-	float discretizationStepsR = 2.0f;
-
-	int[] getAccumulator(PImage edgeImg, int phiDim, int rDim) {
+	public int[] getAccumulator(PImage edgeImg, int phiDim, int rDim) {
 		// our accumulator (with a 1 pix margin around)
 		int[] accumulator = new	int[(phiDim + 2 )*(rDim + 2)];
 
@@ -225,7 +109,7 @@ public class ImageProcessing extends PApplet {
 		for(int	y =	0; y <	edgeImg.height; y++) {
 			for(int	x =	0; x < edgeImg.width; x++) {
 				// Are we on an edge?
-				if(brightness(edgeImg.pixels[y*edgeImg.width + x]) != 0 ) {
+				if(parent.brightness(edgeImg.pixels[y*edgeImg.width + x]) != 0 ) {
 					for(int i = 0; i < phiDim; i++) {
 						float phi = map(i,  0,  phiDim, 0, PI);
 						double rd = (( x*cos(phi) + y*sin(phi) ) / discretizationStepsR);
@@ -236,24 +120,26 @@ public class ImageProcessing extends PApplet {
 			}
 		}
 
+		/*
 		houghImg = createImage( rDim	+ 2, phiDim + 2, ALPHA );
 		for(int i = 0; i < accumulator.length; i++)
 			houghImg.pixels[i] = color(min(255, accumulator[i]));
 		houghImg.updatePixels();
+		*/
 
 		return accumulator;
 	}
 
-	public ArrayList<PVector> hough(PImage edgeImg, int nLines) {
+	public List<PVector> hough(PImage edgeImg, int maxLines) {
 		// dimensions of the accumulator
 		int	phiDim	= (int)(Math.PI/discretizationStepsPhi);
 		int	rDim =	(int)(((edgeImg.width +	edgeImg.height)*2 + 1)/	discretizationStepsR);
 		int[] accumulator = getAccumulator(edgeImg, phiDim, rDim);
 
-		ArrayList<Integer> bestCandidates = new ArrayList<>();
+		List<Integer> bestCandidates = new ArrayList<>();
 
-		int neighbourhood = 5;
-		int minVotes = 120;
+		int neighbourhood = 8;
+		int minVotes = 40;
 
 		for(int accR = 0; accR < rDim; accR++) {
 			for(int accPhi = 0; accPhi < phiDim; accPhi++) {
@@ -285,26 +171,46 @@ public class ImageProcessing extends PApplet {
 
 		Collections.sort(bestCandidates, cmp);
 
-		ArrayList<PVector> lines = new ArrayList<PVector>();
-		for	( int i = 0; i < Math.min(nLines, bestCandidates.size()); i++)
-		{
+		List<PVector> lines = new ArrayList<PVector>();
+		for	( int i = 0; i < Math.min(maxLines, bestCandidates.size()); i++) {
 			int idx = bestCandidates.get(i);
 			// first, compute back the (r, phi) polar coordinates:
-			int accPhi	=	(int)(idx/(rDim + 2))-1;
+			int accPhi	=	idx/(rDim + 2) -1;
 			int	accR	=	idx	- (	accPhi + 1 )*(rDim + 2  ) - 1;
 			float r = (	accR - (rDim -	1)*0.5f)*discretizationStepsR;
 			float phi = accPhi*	discretizationStepsPhi;
-
 			lines.add(new PVector(r, phi));
-
-
 		}
-		return lines;
 
+		return lines;
 	}
 
-	void drawLines(List<PVector> lines) {
+	public PImage colorFilter(PImage img, float h1, float h2, float s1, float s2, float b1, float b2) {
+		PImage result = parent.createImage(img.width, img.height, RGB);
+		for (int i = 0; i < img.width * img.height; ++i) {
+			int c = img.pixels[i];
+			float h = parent.hue(c);
+			float s = parent.saturation(c);
+			float b = parent.brightness(c);
+			result.pixels[i] = (h1 <= h && h <= h2 && s1 <= s && s <= s2 && b1 <= b && b <= b2) ?  c : parent.color(0);
+		}
+		return result;
+	}
+	
+	public PImage thresholdFilter(PImage img, float h1, float h2, float s1, float s2, float b1, float b2) {
+		PImage result = parent.createImage(img.width, img.height, ALPHA);
+		for (int i = 0; i < img.width * img.height; ++i) {
+			int c = img.pixels[i];
+			float h = parent.hue(c);
+			float s = parent.saturation(c);
+			float b = parent.brightness(c);
+			result.pixels[i] = (h1 <= h && h <= h2 && s1 <= s && s <= s2 && b1 <= b && b <= b2) ? parent.color(255) : parent.color(0);
+		}
+		return result;
+	}
+/*
 
+	void drawLines(List<PVector> lines) {
 		for (PVector p : lines) {
 			float r = p.x;
 			float phi = p.y;
@@ -384,7 +290,10 @@ public class ImageProcessing extends PApplet {
 		}
 	}
 
-	public static void main(String[] args) {
+
+
+	//public static void main(String[] args) {
 		PApplet.main(ImageProcessing.class.getName());
 	}
+*/
 }

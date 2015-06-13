@@ -1,24 +1,37 @@
-package cs211.tangiblegame;
+package cs211;
 /** 
 * @author Montero Aimee 221053
 * @author Peterssen Alfonso 221982
 * @author Mbanga Ndjock Pierre Armel 229047
 */
+import static processing.core.PApplet.max;
+
 import java.awt.Color;
 import java.awt.Shape;
 import java.math.MathContext;
 import java.net.Socket;
 import java.text.Format;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Vector;
+
+
+
+
+
+
+import cs211.imageprocessing.BoardDetector;
+import cs211.imageprocessing.CWComparator;
+import cs211.imageprocessing.TwoDThreeD;
 import processing.event.MouseEvent;
 
-import javax.swing.Box;
 
-
+import processing.video.Capture;
+import processing.video.Movie;
 import processing.core.*;
 
-public class GameJava extends PApplet{
+public class GameTest extends PApplet{
 	
 	float wheelFactor = 0.5f;
 	
@@ -95,6 +108,26 @@ public class GameJava extends PApplet{
 	{
 		size(displayWidth, displayHeight, P3D);
 		noStroke();
+		
+		/*
+		video = new Movie(this, "C:\\Users\\mukel\\Desktop\\cs211\\resources\\videos\\testvideo.mp4");
+		video.loop();
+		*/
+		String[] cameras = Capture.list();
+		  
+		  if (cameras.length == 0) {
+		    println("There are no cameras available for capture.");
+		    exit();
+		  } else {
+		    println("Available cameras:");
+		    for (int i = 0; i < cameras.length; i++) {
+		      println(cameras[i]);
+		    }		    
+		    // The camera can be initialized directly using an 
+		    // element from the array returned by list():
+		    video = new Capture(this, cameras[1]);
+		    video.start();     
+		  }      
 		
 		background(250);
 		mover = new Mover();
@@ -233,16 +266,54 @@ public class GameJava extends PApplet{
 		}
 	}
 	
+	Capture video;
+	
 	/** 
 	 * Draws all forms and shapes visible on the screen.
 	 * It does so for both the 3D and 2D coordinate system. By using
 	 * pushMatrix() and popMatrix methods it ensures that each shape 
 	 * is drawn in its corresponding coordinate system. 
 	**/
-	public void draw()
-	{
-		//camera(-width/2, -5*height/2, 0, boxWidth/2, boxHeight/2, boxDepth/2, 0, 1, 0);
+	public void draw() {
+		PImage img = null;
+		if (video.available()) {
+			video.read();
+			img = video.get();
+		}
+		
+		if (img == null)
+			return ;
+		
 		background(200);
+		//img = loadImage("C:\\Users\\mukel\\Desktop\\cs211\\resources\\images\\board4.jpg");
+    	/*
+		int factor = max(1, max(img.width, img.height) / 200);
+		img.resize(img.width / factor, img.height / factor);
+		*/
+		BoardDetector detector = new BoardDetector(this);
+		//image(detector.preprocessImage(img), 100, 100); 			
+
+		PVector[] corners = detector.getCorners(img);
+		if (corners != null) {
+
+		
+			for (PVector p : corners) {
+				fill(255, 128, 0);
+				ellipse(p.x, p.y, 10, 10);
+			}
+		
+			TwoDThreeD t = new TwoDThreeD(img.width,  img.height);
+			PVector rot = t.get3DRotations(Arrays.asList(corners));		
+			
+			text(degrees(rot.x) + " " + degrees(rot.y) + " " + degrees(rot.z), 200, 200);		
+			rotX = (rotX*4 + rot.x) / 5;
+			rotY = (rotY*4 + rot.z) / 5;
+			rotZ = (rotZ*4 - rot.y) / 5;
+		}
+				
+		//camera(-width/2, -5*height/2, 0, boxWidth/2, boxHeight/2, boxDepth/2, 0, 1, 0);
+		
+		//image(img, 100, 100); 	
 		//pushMatrix();
 	
 		drawSurface();
@@ -312,7 +383,7 @@ public class GameJava extends PApplet{
 		mover.display();
 		popMatrix();
 		
-		  	
+		
 		popMatrix();
 		
 		
@@ -729,7 +800,7 @@ public class GameJava extends PApplet{
 	}
 	
 	public static void main(String[] args) {
-		PApplet.main(GameJava.class.getName());
+		PApplet.main(GameTest.class.getName());
 	}
 	class HScrollbar {
 		  float barWidth;  //Bar's width in pixels
