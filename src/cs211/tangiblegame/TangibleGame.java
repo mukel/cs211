@@ -332,9 +332,9 @@ public class TangibleGame extends PApplet{
 				rot.x = fix(rotX, rot.x);
 				//rot.y = fix(rotY, rot.y);
 				rot.z = fix(rotZ, rot.z);
-				rotX = (rotX * 31 + rot.x) / 32;
+				rotX = (rotX * 20 + rot.x) / 21;
 				//	rotY = (rotY * 4 + rot.z) / 5;
-				rotZ = (rotZ * 31 + rot.y) / 32;
+				rotZ = (rotZ * 20 + rot.y) / 21;
 			}
 		}		
 		
