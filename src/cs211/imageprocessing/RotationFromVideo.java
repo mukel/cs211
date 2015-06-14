@@ -9,60 +9,54 @@ import processing.video.Movie;
 public class RotationFromVideo implements RotationProvider {
 
 	PApplet parent;
-	Movie video;
-	volatile boolean loop;
-	volatile PVector rotation;
+	Movie video;	
 	BoardDetector detector;
 	
 	Thread detectorThread;
 
 	public RotationFromVideo(PApplet parent, String fileName) {		
 		video = new Movie(parent, fileName);
-		this.parent = new PApplet();		
+		this.parent = parent;		
 		detector = new BoardDetector(parent);
-		//this.parent = parent;
-	}	
+	}
+	
+	volatile PVector[] corners;
+	
+	public PVector[] getCorners() {
+		return corners;
+	}
+	
+	public PImage getFrame() {
+		PImage img = null;
+		if (video.available()) {
+			video.read();
+			img = video.get();
+		}				
+		return img;			
+	}
 	
 	public void loop() {
-		loop = true;
 		video.loop();
-		detectorThread = new Thread(new Detector());
-		detectorThread.start();
 	}
 	
 	public void stop() {
-		loop = false;
-		try {
-			detectorThread.join();
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-			System.exit(-1);
-		}
+		video.stop();
 	}
+	
+	PVector rotation;
 
 	@Override
 	public PVector getRotation() {
+		PImage img = getFrame();
+		if (img == null)
+			return rotation;
+		PVector[] newCorners = detector.getCorners(img);
+		if (newCorners == null)
+			return rotation;
+		corners = newCorners;
+		TwoDThreeD t = new TwoDThreeD(img.width, img.height);
+		rotation = t.get3DRotations(Arrays.asList(corners));
 		return rotation;
-	}
-
-	class Detector implements Runnable {
-		@Override
-		public void run() {
-			while (loop) {
-				PImage img = null;
-				if (video.available()) {
-					video.read();
-					img = video.get();
-				}				
-				if (img == null)
-					continue ;
-				PVector[] corners = detector.getCorners(img);
-				if (corners == null)
-					continue ;
-				TwoDThreeD t = new TwoDThreeD(parent.width, parent.height);
-				rotation = t.get3DRotations(Arrays.asList(corners));
-			}
-		}
 	}
 }
 

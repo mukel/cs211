@@ -23,19 +23,14 @@ public class BoardDetector {
         ip = new ImageProcessing(parent);
     }
 
-
-
     public PImage preprocessImage(PImage img) {
         PImage filtered = ip.colorFilter(img,
                 0.34f * 255, 0.55f * 255,
                 120, 256,
-                0, 255
+                30, 250
         );
-        PImage blurred = ip.gaussianBlur(ip.gaussianBlur(ip.gaussianBlur(filtered)));
-        
-        PImage t = ip.thresholdFilter(filtered, 0,  255,  0,  255,  50, 255);
-        //return blurred;
-        //return t;
+        PImage blurred = ip.gaussianBlur(ip.gaussianBlur(ip.gaussianBlur(filtered)));        
+        PImage t = ip.thresholdFilter(filtered, 0,  255,  0,  255,  60, 255);
         return ip.sobel(t);
     }
 
@@ -51,7 +46,7 @@ public class BoardDetector {
     public PVector[] getCorners(PImage img) {
 		int factor = max(1, max(img.width, img.height) / 200);
 		img.resize(img.width / factor, img.height / factor);
-		parent.image(img, 100, 100);
+		parent.image(img, 0, 0);
         img = preprocessImage(img);
 
         
@@ -92,6 +87,7 @@ public class BoardDetector {
                 	if (area > largerArea) {
                 		largerArea = area;
                 		bestQuad = new PVector[]{c1, c2, c3, c4};
+                		break;
                 	}
                 }
             }
@@ -100,17 +96,19 @@ public class BoardDetector {
         
         if (bestQuad == null)
         	return null;
-        
+
+		for (PVector p: bestQuad) {				
+			parent.fill(255, 128, 0);
+			parent.ellipse(p.x, p.y, 10, 10);
+		}
         
         for (int i = 0; i < bestQuad.length; ++i) {
         	bestQuad[i].x *= factor;
         	bestQuad[i].y *= factor;
         	bestQuad[i].z *= factor;
         }
-        	
+        
         //System.out.println("pepe");
-        
-        
         return sortCorners(Arrays.asList(bestQuad)).toArray(new PVector[0]);
     }
 

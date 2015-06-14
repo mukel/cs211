@@ -139,7 +139,7 @@ public class ImageProcessing {
 		List<Integer> bestCandidates = new ArrayList<>();
 
 		int neighbourhood = 8;
-		int minVotes = 40;
+		int minVotes = 18;
 
 		for(int accR = 0; accR < rDim; accR++) {
 			for(int accPhi = 0; accPhi < phiDim; accPhi++) {

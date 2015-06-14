@@ -7,15 +7,18 @@ package cs211.tangiblegame;
 
 import java.util.*;
 
-import javax.media.opengl.GLFBODrawable.Resizeable;
-
+import cs211.imageprocessing.BoardDetector;
+import cs211.imageprocessing.RotationFix;
+import cs211.imageprocessing.RotationFromVideo;
+import cs211.imageprocessing.RotationProvider;
+import cs211.imageprocessing.RotationSmoother;
 import processing.event.MouseEvent;
 
 
 
 import processing.core.*;
 
-public class GameJava extends PApplet{
+public class TangibleGame extends PApplet{
 	
 	float wheelFactor = 0.5f;
 	
@@ -68,10 +71,6 @@ public class GameJava extends PApplet{
 	float shapeWidth = 20;
 	float shapeHeight = 15;
 	int cylinderResolution = 20;
-	
-	
-	
-	
 
 	float velocity;
 	float TotalScore;
@@ -100,7 +99,9 @@ public class GameJava extends PApplet{
 	int HDWidth = 1280 ;
 	int HDHeight = 720;
 	
-	PImage img;
+	RotationProvider rotProvider;
+	RotationFromVideo fromVideo;
+	
 	/** 
 	 * This function is called once when the program starts. It
 	 * defines initial environment properties such as screen 
@@ -109,13 +110,16 @@ public class GameJava extends PApplet{
 	public void setup()
 	{
 		size(HDWidth, HDHeight, P3D);
-		
+		fromVideo = new RotationFromVideo(this, "c:\\Users\\mukel\\Desktop\\cs211\\resources\\videos\\testvideo.mp4");
+		RotationProvider fixed = new RotationFix(fromVideo);
+		rotProvider = fromVideo;// new RotationSmoother(fixed);
+		fromVideo.loop();
 		
 		noStroke();
 		
 		background(250);
 		
-		img = loadImage("Sea.jpg");
+		//img = loadImage("Sea.jpg");
 		
 		ball = new Ball();
 		
@@ -270,12 +274,19 @@ public class GameJava extends PApplet{
 				  rotX = PI/3;
 			  }
 
-			  gravity.x = gravityConst*sin(rotZ);
-			  gravity.z = -gravityConst*sin(rotX);
 
 		}
 	}
 	
+	static private float PI = (float)Math.PI;
+	
+	private float fix(float oldValue, float newValue) {
+		oldValue += 4 * PI;
+		newValue += 4 * PI;		
+		while (newValue - oldValue >= PI/2) newValue -= PI/2;
+		return newValue - 4*PI;
+	}
+
 	/** 
 	 * Draws all forms and shapes visible on the screen.
 	 * It does so for both the 3D and 2D coordinate system. By using
@@ -288,6 +299,26 @@ public class GameJava extends PApplet{
 		background(204, 255, 255);
 		//pushMatrix();
 		
+		if (rotProvider != null) {
+			PVector rot = rotProvider.getRotation();
+			if (rot != null) {
+				//text(rot.x + " " + rot.y + " " + rot.z, 400, 400);
+				rot.x = fix(rotX, rot.x);
+				rot.y = fix(rotY, rot.y);
+				rot.z = fix(rotZ, rot.z);
+				rotX = (rotX * 4 + rot.x) / 5;
+				//rotY = (rotY * 4 + rot.z) / 5;
+				rotZ = (rotZ * 4 + rot.y) / 5;
+			}
+		}
+		
+		PImage img = fromVideo.getFrame();
+		if (img != null) {			
+			//img.resize(img.width / 2, img.height / 2);
+			//image(img,  0,  0);
+			PVector[] corners = fromVideo.getCorners();
+
+		}
 		
 		drawSurface();
 		image(mySurface, 0, height - mySurfaceHeight);
@@ -543,6 +574,9 @@ public class GameJava extends PApplet{
 		 */
 		void update()
 		{
+
+			gravity.x = gravityConst*sin(rotZ);
+			gravity.z = -gravityConst*sin(rotX);
 			friction = velocity.get();
 			
 			
@@ -835,7 +869,7 @@ public class GameJava extends PApplet{
 				}
 				else
 				{
-					translate(shapelocation.x, shapelocation.y - shapeHeight, shapelocation.z );
+					translate(shapelocation.x, shapelocation.y - shapeHeight , shapelocation.z );
 					fill(0);
 					shape(cylinder);
 				}
@@ -865,7 +899,7 @@ public class GameJava extends PApplet{
 	}
 	
 	public static void main(String[] args) {
-		PApplet.main(GameJava.class.getName());
+		PApplet.main(TangibleGame.class.getName());
 	}
 	class HScrollbar {
 		  float barWidth;  //Bar's width in pixels
