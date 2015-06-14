@@ -1,0 +1,87 @@
+# Blender MTL File: 'Lighthouse.blend'
+# Material Count: 8
+
+newmtl Beaconglass
+Ns 96.078431
+Ka 0.000000 0.000000 0.000000
+Kd 0.800000 0.800000 0.800000
+Ks 0.553949 0.914877 1.000000
+Ni 1.000000
+d 1.000000
+illum 2
+map_Kd glass.jpg
+map_Bump glass.jpg
+
+newmtl BodySpiral
+Ns 96.078431
+Ka 0.000000 0.000000 0.000000
+Kd 0.152325 0.152325 0.152325
+Ks 0.100000 0.100000 0.100000
+Ni 1.000000
+d 1.000000
+illum 2
+map_Kd diagonal.png
+map_Bump peeling-painted-brick-wall.jpg
+
+newmtl BodySpiral_NONE
+Ns 96.078431
+Ka 0.000000 0.000000 0.000000
+Kd 0.152325 0.152325 0.152325
+Ks 0.100000 0.100000 0.100000
+Ni 1.000000
+d 1.000000
+illum 2
+map_Bump peeling-painted-brick-wall.jpg
+map_Kd peeling-painted-brick-wall.jpg
+
+newmtl BodySpiral_peeling-painted-brick-wall.jpg
+Ns 96.078431
+Ka 0.000000 0.000000 0.000000
+Kd 0.152325 0.152325 0.152325
+Ks 0.100000 0.100000 0.100000
+Ni 1.000000
+d 1.000000
+illum 2
+map_Kd peeling-painted-brick-wall.jpg
+map_Bump peeling-painted-brick-wall.jpg
+
+newmtl Bricked
+Ns 96.078431
+Ka 0.000000 0.000000 0.000000
+Kd 0.640000 0.640000 0.640000
+Ks 0.050265 0.050265 0.050265
+Ni 1.000000
+d 1.000000
+illum 2
+map_Kd peeling-painted-brick-wall.jpg
+map_Bump peeling-painted-brick-wall.jpg
+
+newmtl None
+Ns 0
+Ka 0.000000 0.000000 0.000000
+Kd 0.8 0.8 0.8
+Ks 0.8 0.8 0.8
+d 1
+illum 2
+
+newmtl OldFloor
+Ns 96.078431
+Ka 0.000000 0.000000 0.000000
+Kd 0.428360 0.428360 0.428360
+Ks 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 1
+map_Kd peeling-painted-brick-wall.jpg
+map_Bump old_paint.jpg
+
+newmtl RustyHead
+Ns 96.078431
+Ka 0.000000 0.000000 0.000000
+Kd 0.640000 0.640000 0.640000
+Ks 0.023810 0.023810 0.023810
+Ni 1.000000
+d 1.000000
+illum 2
+map_Kd rusty.jpg
+map_Bump rusty.jpg
