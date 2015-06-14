@@ -7,6 +7,8 @@ package cs211.tangiblegame;
 
 import java.util.*;
 
+import javax.media.opengl.GLFBODrawable.Resizeable;
+
 import processing.event.MouseEvent;
 
 
@@ -29,9 +31,9 @@ public class GameJava extends PApplet{
 
 	float depth = 800;
 		
-	float boxHeight = 10;
-	float boxWidth = 350;
-	float boxDepth = 350;
+	float boxHeight = 8;
+	float boxWidth = 300;
+	float boxDepth = 300;
 	
 	float sphereRadius = 15;
 	//float density = 0.002f;
@@ -64,7 +66,7 @@ public class GameJava extends PApplet{
 	PShape lightHouse;
 	
 	float shapeWidth = 20;
-	float shapeHeight = 20;
+	float shapeHeight = 15;
 	int cylinderResolution = 20;
 	
 	
@@ -77,6 +79,7 @@ public class GameJava extends PApplet{
 	
 	PFont f;
 	int mySurfaceHeight = 175;
+	int topVieDim = mySurfaceHeight - 10;
 	PGraphics mySurface;
 	PGraphics topViw;
 	PGraphics Score;
@@ -93,8 +96,11 @@ public class GameJava extends PApplet{
 	float scoreBoxHeight;
 	float scoreLimit;
 	List<Float> bars;
-
 	
+	int HDWidth = 1280 ;
+	int HDHeight = 720;
+	
+	PImage img;
 	/** 
 	 * This function is called once when the program starts. It
 	 * defines initial environment properties such as screen 
@@ -102,24 +108,35 @@ public class GameJava extends PApplet{
 	 */
 	public void setup()
 	{
-		size(displayWidth, displayHeight, P3D);
+		size(HDWidth, HDHeight, P3D);
+		
+		
 		noStroke();
 		
 		background(250);
+		
+		img = loadImage("Sea.jpg");
+		
 		ball = new Ball();
 		
 
 		lightHouse = loadShape("models/Lighthouse_7.obj");
 		lightHouse.rotateX(PI);
 		
-		gravity = new PVector(0.0f, 0.0f, 0.0f);
+		
+		
 		cyliderPos = new ArrayList<Shape>();
+		
+		cyliderPos.add(new Shape(new PVector(-74, -4.0f, -72), ShapeType.LightHouse));
+		
+		gravity = new PVector(0.0f, 0.0f, 0.0f);
+		
 		f = createFont("Arial",16,true); 
 		
 		
 		
 		mySurface = createGraphics(width, mySurfaceHeight, P2D);
-		topViw = createGraphics(mySurfaceHeight - 10, mySurfaceHeight - 10, P2D);
+		topViw = createGraphics(topVieDim, topVieDim, P2D);
 		
 		Score = createGraphics(3* mySurfaceHeight / 4, mySurfaceHeight - 10);
 		
@@ -128,13 +145,12 @@ public class GameJava extends PApplet{
 		scoreBoxPos = 0;
 		scoreBoxHeight = 5f;
 		scoreBoxWidth = 10f;
-		scoreLimit = 2500;
+		scoreLimit = 1250;
 		counter = 0;
 		
 		//image(barChart, 2*mySurfaceHeight + 70,height - mySurfaceHeight- 25 );
-		
-		scrollH = new HScrollbar(false, topViw.width + Score.width + 35, height - 130 , barChart.width/2, 20);
-		scrollV = new HScrollbar(true,  topViw.width + Score.width + 10, height - mySurfaceHeight - 95, 20, barChart.height);
+		scrollH = new HScrollbar(false, topViw.width + Score.width + 35, height - mySurfaceHeight + barChart.height + 15 ,barChart.width/2, 20);
+		scrollV = new HScrollbar(true, topViw.width + Score.width + 10, height - mySurfaceHeight + 5 ,20, barChart.height);
 		
 		
 		bars = new ArrayList<>();
@@ -196,8 +212,6 @@ public class GameJava extends PApplet{
 		int x = mouseX - width/2;
 		int y = mouseY - height/2;
 		
-		println("mouse clicked");
-		//Changer ici les coordonees du cilindre
 		if(!modeStandar &&
 			(x >= - boxWidth/2 + shapeWidth && x <= + boxWidth/2 - shapeWidth)&&
 			 y >= - boxDepth/2 + shapeWidth && y <= + boxDepth/2 -shapeWidth)
@@ -205,7 +219,8 @@ public class GameJava extends PApplet{
 			tooCloseOfEdge = false;
 			if(ball.checkPos(x, y))
 			{			
-				cyliderPos.add(new Shape(new PVector(x, - boxHeight/2f, y )) );
+				cyliderPos.add(new Shape( new PVector(x, - boxHeight/2f, y ), ShapeType.Cylinder ) );
+				
 				tooCloseOfBall = false;
 			}
 			else
@@ -270,9 +285,10 @@ public class GameJava extends PApplet{
 	public void draw()
 	{
 		//camera(-width/2, -5*height/2, 0, boxWidth/2, boxHeight/2, boxDepth/2, 0, 1, 0);
-		background(200);
+		background(204, 255, 255);
 		//pushMatrix();
-	
+		
+		
 		drawSurface();
 		image(mySurface, 0, height - mySurfaceHeight);
 		
@@ -283,13 +299,6 @@ public class GameJava extends PApplet{
 		image(Score, topViw.width + 5, height - mySurfaceHeight + 5);
 		
 		
-		scrollH.update();
-		scrollH.display();
-		
-		scrollV.update();
-		scrollV.display();
-		
-		
 		scoreBoxWidth = 10*(scrollH.getPos() + 0.2f);
 		
 		scoreBoxHeight = 10*(scrollV.getPos() + 0.2f);
@@ -298,18 +307,33 @@ public class GameJava extends PApplet{
 		drawBarChart();
 		image(barChart, topViw.width + Score.width + 35 ,height - mySurfaceHeight + 5);
 		
-		/*
-		camera(width/2, height/2, depth, width/2, height/2, 0, 0, 1, 0);
+		if(width != HDWidth || height != HDHeight)
+		{
+			HDWidth = width;
+			HDHeight = height;
+			scrollH = new HScrollbar(false, topViw.width + Score.width + 35, height - mySurfaceHeight + barChart.height + 15 ,barChart.width/2, 20);
+			scrollV = new HScrollbar(true, topViw.width + Score.width + 10, height - mySurfaceHeight + 5 ,20, barChart.height);
 			
-		directionalLight(50, 100, 200, 0, 0,-1);
-		ambientLight(102, 102, 102);
-		*/
-	
+		}
+		scrollH.update();
+		scrollH.display();
+		
+		scrollV.update();
+		scrollV.display();
+		
+		
+		directionalLight(255, 255, 255, 0, -1,-1);
+		ambientLight(255, 255, 255);	
+		
 		pushMatrix();
+		
+	
 		
 		translate(width/2, height/2, 0);
 		if(modeStandar)
 		{
+			//camera(0, 1, depth, 0, 0, 0, 0, 1, 0);
+			
 			tooCloseOfBall = false;
 			tooCloseOfEdge = false;
 			
@@ -318,14 +342,18 @@ public class GameJava extends PApplet{
 			rotateX(rotX);
 		
 			stroke(20);
-			fill(255);
+			noFill();
+			
+			
+			fill(0,51,102);
 			box(boxWidth, boxHeight, boxDepth);
-		
+				
 			
 			ball.update();
 			ball.checkEdge();
 			ball.checkCylinders();
 			
+			//popMatrix();
 			//mover.display();
 		
 		}
@@ -333,22 +361,27 @@ public class GameJava extends PApplet{
 		else
 		{
 			stroke(10);
-			fill(255);
+			fill(0,128,255);
 			box(boxWidth, boxDepth, boxHeight);
 						
 		}
-		pushMatrix();
 		
 		for(int i = 0; i < cyliderPos.size(); i++)
 		{
-		
+			
 			cyliderPos.get(i).display();
+			
 		}
 		
+		/*
+		camera(width/2, height/2, depth, width/2, height/2, 0, 0, 1, 0);
+			
+		
+		
+		*/
 		
 		ball.display();
-		popMatrix();
-		
+	
 		  	
 		popMatrix();
 		
@@ -371,10 +404,12 @@ public class GameJava extends PApplet{
 		PVector newLocation = topViwLocation(location.x, location.y);
 		
 		topViw.fill(152,0,0);
-		float newBallRadius = map(sphereRadius, 0, boxWidth*boxDepth, 0, mySurfaceHeight*mySurfaceHeight);
+		float newBallRadius = map(sphereRadius, 0, boxWidth*boxDepth, 0, topVieDim*topVieDim);
+		
 		topViw.ellipse(newLocation.x, newLocation.y, 4*newBallRadius, 4*newBallRadius);
 		
-		float newCylinderRadius = map(shapeWidth, 0, boxWidth*boxDepth, 0, mySurfaceHeight*mySurfaceHeight);
+		float newCylinderRadius = map(shapeWidth, 0, boxWidth*boxDepth, 0, topVieDim*topVieDim);
+		
 		for(int i = 0; i < cyliderPos.size(); i++)
 		{
 			PVector cylinder = cyliderPos.get(i).shapelocation;
@@ -392,8 +427,8 @@ public class GameJava extends PApplet{
 	
 	PVector topViwLocation(float x , float y)
 	{
-		float newX = map(x, -boxWidth/2, boxWidth/2, 0, mySurfaceHeight);
-		float newY = map(y, -boxDepth/2, boxDepth/2, 0, mySurfaceHeight);
+		float newX = map(x, -boxWidth/2, boxWidth/2, 0, topVieDim);
+		float newY = map(y, -boxDepth/2, boxDepth/2, 0, topVieDim);
 		
 		return new PVector(newX, newY);
 		
@@ -432,6 +467,7 @@ public class GameJava extends PApplet{
 	{
 		
 		barChart.beginDraw();
+		
 		barChart.background(240, 230, 210);
 		barChart.line(0, barChart.height / 2, barChart.width, barChart.height/2);
 		
@@ -469,7 +505,6 @@ public class GameJava extends PApplet{
 		}
 		barChart.endDraw();
 	}
-	
 	
 	
 	/** 
@@ -548,6 +583,8 @@ public class GameJava extends PApplet{
 		 */
 		void display()
 		{	
+			pushMatrix();
+			
 			if(modeStandar)
 				translate(location.x, location.y, location.z);
 			else
@@ -555,9 +592,15 @@ public class GameJava extends PApplet{
 				PVector newlocation = new PVector(location.x, location.z, 0);
 				translate(newlocation.x, newlocation.y, newlocation.z);
 			}
+		
+			
 			noStroke();
-			fill(0, 200, 0);
+			fill(153, 0, 0);
 			sphere(sphereRadius);
+			
+			fill(102, 51, 0);
+			
+			popMatrix();
 		}
 		
 		PVector get2DLocation()
@@ -581,7 +624,7 @@ public class GameJava extends PApplet{
 		 */
 		void checkEdge()
 		{
-			if(location.x >= boxWidth/2 - sphereRadius/2 || location.x <= -boxWidth/2 + sphereRadius/2)
+			if(location.x >= boxWidth/2 - sphereRadius || location.x <= -boxWidth/2 + sphereRadius)
 			{
 				lastScore = velocity.mag();
 				
@@ -592,7 +635,7 @@ public class GameJava extends PApplet{
 				
 				
 			}
-			if(location.z >= boxDepth/2 - sphereRadius/2 || location.z <= -boxDepth/2 + sphereRadius/2)
+			if(location.z >= boxDepth/2 - sphereRadius || location.z <= -boxDepth/2 + sphereRadius)
 			{
 				lastScore = velocity.mag();
 				
@@ -602,11 +645,11 @@ public class GameJava extends PApplet{
 			}
 			
 			
-			location.x = Math.max(location.x, -boxWidth/2 + sphereRadius/2);
-			location.x = Math.min(location.x, +boxWidth/2 - sphereRadius/2);
+			location.x = Math.max(location.x, -boxWidth/2 + sphereRadius);
+			location.x = Math.min(location.x, +boxWidth/2 - sphereRadius);
 			
-			location.z = Math.max(location.z, -boxDepth/2 + sphereRadius/2);
-			location.z = Math.min(location.z, +boxDepth/2 - sphereRadius/2);
+			location.z = Math.max(location.z, -boxDepth/2 + sphereRadius);
+			location.z = Math.min(location.z, +boxDepth/2 - sphereRadius);
 			
 			
 		
@@ -618,9 +661,6 @@ public class GameJava extends PApplet{
 		{
 			
 			float dist = dist(location.x, location.z,x, z);//n.mag();
-			//println("ball posx: "+ location.x + " ball pos y : " + location.z);
-			//println("X : " + x + "  Y : " + z);
-			//println("dist " + dist + " radio S + radio C : " + (sphereRadius + cylinderBaseSize) );
 			
 			return (dist > sphereRadius + shapeWidth);
 		}
@@ -681,6 +721,8 @@ public class GameJava extends PApplet{
 		PVector shapelocation;
 		
 		PShape cylinder;
+
+		ShapeType type;
 		
 		/** 
 		 * Creates a cylinder in a given mode.
@@ -694,7 +736,7 @@ public class GameJava extends PApplet{
 		 * 		   cylinder shape in 3D and 2D mode along with its
 		 * 		   initial position.
 		 */
-		private PShape CreateCylinder(boolean mode)
+		private PShape CreateCylinder()
 		{
 			PShape cylinder;
 			float angle;
@@ -732,7 +774,7 @@ public class GameJava extends PApplet{
 			
 			for(int i = 0; i < cylinderResolution; i++)
 			{
-				topCylinder.vertex(x[i], shapeHeight, y[i]);
+				topCylinder.vertex(x[i], shapeHeight , y[i]);
 				topCylinder.vertex(x[i+1], shapeHeight, y[i+1]);
 				
 			}
@@ -740,11 +782,11 @@ public class GameJava extends PApplet{
 			
 			BottomCylinder = createShape();
 			BottomCylinder.beginShape(TRIANGLE_FAN);
-			BottomCylinder.vertex(0, 0, 0);		
+			BottomCylinder.vertex(0, -15, 0);		
 			for(int i = 0; i < cylinderResolution; i++)
 			{	
 				BottomCylinder.vertex(x[i], 0, y[i]);
-				BottomCylinder.vertex(x[i+1], 0, y[i+1]);
+				BottomCylinder.vertex(x[i+1],0 , y[i+1]);
 				
 			}
 			
@@ -761,13 +803,15 @@ public class GameJava extends PApplet{
 		 * Constructs a cylinder at a given location.
 		 * @param location the location at which to construct the cylinder
 		 */
-		Shape(PVector location)
+		Shape(PVector location, ShapeType type)
 		{
 			shapelocation = location;
-			cylinder = CreateCylinder(true);
 			
+			if(type == ShapeType.Cylinder)
+				cylinder = CreateCylinder();
 			
-		
+			this.type = type;
+			
 		}
 	
 		/** 
@@ -781,12 +825,20 @@ public class GameJava extends PApplet{
 			
 			if(modeStandar)
 			{
-				translate(shapelocation.x, shapelocation.y , shapelocation.z );
+				
 				
 				noStroke();
-				//rotateX(PI);
-				
-				shape(lightHouse);
+				if(type == ShapeType.LightHouse)
+				{
+					translate(shapelocation.x, shapelocation.y  , shapelocation.z );
+					shape(lightHouse);
+				}
+				else
+				{
+					translate(shapelocation.x, shapelocation.y - shapeHeight, shapelocation.z );
+					fill(0);
+					shape(cylinder);
+				}
 			}
 			else
 			{
@@ -795,7 +847,15 @@ public class GameJava extends PApplet{
 				noStroke();
 				//fill(200, 100, 100);
 				rotateX(-PI/2);
-				shape(lightHouse);
+				
+				fill(102, 51, 0);
+				if(type == ShapeType.LightHouse)
+					shape(lightHouse);
+				else
+				{
+					
+					shape(cylinder);
+				}
 				
 			}
 		
@@ -828,24 +888,24 @@ public class GameJava extends PApplet{
 		   * @param y The y position of the top left corner of the bar in pixels
 		   * @param w The width of the bar in pixels
 		   * @param h The height of the bar in pixels
-		   * @param v Indicate if the scroll is vertical, false if is horizontal
+		   * @param isvertical Indicate if the scroll is vertical, false if it's horizontal
 		   */
-		  HScrollbar (boolean v, float x, float y, float w, float h) {
+		  HScrollbar (boolean isvertical,float x, float y, float w, float h) {
 		    barWidth = w;
 		    barHeight = h;
 		    
+		    vertical = isvertical;
+		    
 		    xPosition = x;
-		    yPosition = y;
+			yPosition = y;
 		    
-		    vertical = v;
-		    
-		    sliderPosition = (!v)? xPosition + barWidth/2 - barHeight/2 : yPosition + barHeight / 2 - barWidth/2;
-		    newSliderPosition = sliderPosition;
-		    
-		    sliderPositionMin = (!v) ? xPosition : yPosition;
-		    sliderPositionMax = (!v) ? xPosition + barWidth - barHeight : yPosition + barHeight - barWidth ;
+		    sliderPosition = (!vertical)? xPosition + barWidth/2 - barHeight/2 : yPosition + barHeight / 2 - barWidth/2;
+			newSliderPosition = sliderPosition;
+			    
+			sliderPositionMin = (!vertical) ? xPosition : yPosition;
+			sliderPositionMax = (!vertical) ? xPosition + barWidth - barHeight : yPosition + barHeight - barWidth ;
+		
 		  }
-
 		  /**
 		   * @brief Updates the state of the scrollbar according to the mouse movement
 		   */
@@ -891,7 +951,7 @@ public class GameJava extends PApplet{
 		   */
 		  boolean isMouseOver() {
 		    if (mouseX  > xPosition && mouseX < xPosition + barWidth &&
-		      mouseY  > yPosition && mouseY  < yPosition+barHeight) {
+		      mouseY  > yPosition && mouseY < yPosition+barHeight) {
 		      return true;
 		    }
 		    else {
@@ -930,6 +990,6 @@ public class GameJava extends PApplet{
 		    return (sliderPosition - xPosition)/(barWidth - barHeight);
 		  }
 		}
-	
+		enum ShapeType{Cylinder, LightHouse};
 
 }
