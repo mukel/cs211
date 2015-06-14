@@ -124,7 +124,7 @@ public class TangibleGame extends PApplet{
 		ball = new Ball();
 		
 
-		lightHouse = loadShape("models/Lighthouse_7.obj");
+		lightHouse = loadShape("models/Lighthouse.obj");
 		lightHouse.rotateX(PI);
 		
 		
@@ -273,8 +273,6 @@ public class TangibleGame extends PApplet{
 			  {
 				  rotX = PI/3;
 			  }
-
-
 		}
 	}
 	
