@@ -25,6 +25,8 @@ import cs211.imageprocessing.TwoDThreeD;
 
 public class TangibleGame extends PApplet{
 	
+	final String videoPath = "resources\\videos\\testvideo.mp4";
+	
 	float wheelFactor = 0.5f;
 	
 	@Override
@@ -115,7 +117,7 @@ public class TangibleGame extends PApplet{
 	public void setup()
 	{
 		size(HDWidth, HDHeight, P3D);
-		fromVideo = new RotationFromVideo(this, "c:\\Users\\mukel\\Desktop\\cs211\\resources\\videos\\testvideo.mp4");
+		fromVideo = new RotationFromVideo(this, videoPath);
 		//RotationProvider fixed = new RotationFix(fromVideo);
 		//rotProvider = fromVideo; //new RotationSmoother(fixed);
 		fromVideo.loop();
