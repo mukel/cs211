@@ -15,23 +15,21 @@ import static processing.core.PApplet.*;
  * Created by mukel on 6/12/15.
  */
 public class BoardDetector {
-    PApplet parent;
-    ImageProcessing ip;
+    PApplet parent;    
 
     public BoardDetector(PApplet parent) {
         this.parent = parent;
-        ip = new ImageProcessing(parent);
     }
 
-    public PImage preprocessImage(PImage img) {
-        PImage filtered = ip.colorFilter(img,
+    public static RawImage preprocessImage(RawImage image) {    	
+        RawImage filtered = ImageProcessing.colorFilterInPlace(image,
                 0.34f * 255, 0.55f * 255,
                 120, 256,
                 30, 250
         );
-        PImage blurred = ip.gaussianBlur(ip.gaussianBlur(ip.gaussianBlur(filtered)));        
-        PImage t = ip.thresholdFilter(filtered, 0,  255,  0,  255,  60, 255);
-        return ip.sobel(t);
+        RawImage blurred = ImageProcessing.gaussianBlur(ImageProcessing.gaussianBlur(filtered));        
+        RawImage t = ImageProcessing.thresholdFilterInPlace(filtered, 0,  255,  0,  255,  60, 255);
+        return ImageProcessing.sobel(t);
     }
 
     public static PVector intersection(PVector line1, PVector line2) {
@@ -43,15 +41,15 @@ public class BoardDetector {
         return new PVector(x, y);
     }
 
-    public PVector[] getCorners(PImage img) {
-		int factor = max(1, max(img.width, img.height) / 200);
-		img.resize(img.width / factor, img.height / factor);
-		parent.image(img, 0, 0);
-        img = preprocessImage(img);
+    public List<PVector[]> getCorners(PImage source) {
 
-        
-
-        List<PVector> lines = ip.hough(img, 6);
+		int factor = max(1, max(source.width, source.height) / 100);
+		source.resize(source.width / factor, source.height / factor);
+    	RawImage image = new RawImage(source);
+		
+        image = preprocessImage(image);
+       // parent.image(image.toPImage(parent), 0, 0);
+        List<PVector> lines = ImageProcessing.hough(image, 6);
         //System.out.println("Lines found = " + lines.size());
         if (lines.size() < 4)
             return null;
@@ -60,13 +58,11 @@ public class BoardDetector {
         qg.build(lines, parent.width, parent.height);
         List<int[]> quads = qg.findCycles();
         
-        int imageArea = img.width * img.height;
+        int imageArea = image.width * image.height;
 
         float largerArea = -1;
-        PVector[] bestQuad = null;
-
         // Filter malformed quads
-        List<int[]> bestQuads = new ArrayList<>();
+        List<PVector[]> bestQuads = new ArrayList<>();
         for (int[] quad : quads) {
             PVector line1 = lines.get(quad[0]);
             PVector line2 = lines.get(quad[1]);
@@ -81,35 +77,31 @@ public class BoardDetector {
             if (QuadGraph.isConvex(c1, c2, c3, c4) &&
                     QuadGraph.nonFlatQuad(c1, c2, c3, c4) ) {
                     //QuadGraph.validArea(c1, c2, c3, c4, parent.width * parent.height, width * height / 100)) {
-
                 float area = getQuadArea(c1, c2, c3, c4);
-                if (imageArea / 20 < area && area  < imageArea) {                	
-                	if (area > largerArea) {
-                		largerArea = area;
-                		bestQuad = new PVector[]{c1, c2, c3, c4};
-                		break;
-                	}
+                if (imageArea / 20 < area && area  < imageArea) {
+                	bestQuads.add(new PVector[]{c1, c2, c3, c4});
                 }
             }
         }
         
         
-        if (bestQuad == null)
-        	return null;
-
+/*
 		for (PVector p: bestQuad) {				
 			parent.fill(255, 128, 0);
 			parent.ellipse(p.x, p.y, 10, 10);
 		}
-        
-        for (int i = 0; i < bestQuad.length; ++i) {
-        	bestQuad[i].x *= factor;
-        	bestQuad[i].y *= factor;
-        	bestQuad[i].z *= factor;
+*/
+        for (int i = 0; i < bestQuads.size(); ++i) {
+        	PVector[] quad = bestQuads.get(i);
+        	for (int j = 0; j < quad.length; ++j) {
+        		quad[j].x *= factor;
+        		quad[j].y *= factor;
+        		//quad[j].z *= factor;
+        	}
+        	sortCorners(Arrays.asList(quad));
         }
-        
-        //System.out.println("pepe");
-        return sortCorners(Arrays.asList(bestQuad)).toArray(new PVector[0]);
+
+        return bestQuads;
     }
 
     private float getQuadArea(PVector c1, PVector c2, PVector c3, PVector c4) {
@@ -144,4 +136,22 @@ public class BoardDetector {
     	
     	return quad;
     }
+    
+    
+    public static float getDistance(PVector[] old, PVector[] cows) {
+    	float closestDist = Float.MAX_VALUE;
+    	for (int a = 0; a < 4; ++a)
+    		for (int b = 0; b < 4; ++b) if (b != a)
+    			for (int c = 0; c < 4; ++c) if (c != a && c != b) {
+    				int d = 0 + 1 + 2 + 3 - a - b - c;
+    				float dist = sq(cows[0].dist(old[a])) +
+    						sq(cows[1].dist(old[b])) +
+    								sq(cows[2].dist(old[c])) +
+    										sq(cows[3].dist(old[d])); 
+    				
+    				if (dist < closestDist)
+    					closestDist = dist;
+    			}    				
+    	return closestDist;
+    }    
 }

@@ -6,6 +6,7 @@ package cs211.tangiblegame;
 */
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import processing.core.PApplet;
@@ -15,9 +16,12 @@ import processing.core.PImage;
 import processing.core.PShape;
 import processing.core.PVector;
 import processing.event.MouseEvent;
+import cs211.imageprocessing.BoardDetector;
 import cs211.imageprocessing.RotationFix;
 import cs211.imageprocessing.RotationFromVideo;
 import cs211.imageprocessing.RotationProvider;
+import cs211.imageprocessing.RotationSmoother;
+import cs211.imageprocessing.TwoDThreeD;
 
 public class TangibleGame extends PApplet{
 	
@@ -100,7 +104,7 @@ public class TangibleGame extends PApplet{
 	int HDWidth = 1280 ;
 	int HDHeight = 720;
 	
-	RotationProvider rotProvider;
+	//RotationProvider rotProvider;
 	RotationFromVideo fromVideo;
 	
 	/** 
@@ -112,8 +116,8 @@ public class TangibleGame extends PApplet{
 	{
 		size(HDWidth, HDHeight, P3D);
 		fromVideo = new RotationFromVideo(this, "c:\\Users\\mukel\\Desktop\\cs211\\resources\\videos\\testvideo.mp4");
-		RotationProvider fixed = new RotationFix(fromVideo);
-		rotProvider = fromVideo;// new RotationSmoother(fixed);
+		//RotationProvider fixed = new RotationFix(fromVideo);
+		//rotProvider = fromVideo; //new RotationSmoother(fixed);
 		fromVideo.loop();
 		
 		noStroke();
@@ -278,6 +282,7 @@ public class TangibleGame extends PApplet{
 	}
 	
 	static private float PI = (float)Math.PI;
+	float distNoise = 800;
 	
 	private float fix(float oldValue, float newValue) {
 		oldValue += 4 * PI;
@@ -285,6 +290,8 @@ public class TangibleGame extends PApplet{
 		while (newValue - oldValue >= PI/2) newValue -= PI/2;
 		return newValue - 4*PI;
 	}
+	
+	PVector[] oldCorners;
 
 	/** 
 	 * Draws all forms and shapes visible on the screen.
@@ -298,25 +305,48 @@ public class TangibleGame extends PApplet{
 		background(204, 255, 255);
 		//pushMatrix();
 		
-		if (rotProvider != null) {
-			PVector rot = rotProvider.getRotation();
-			if (rot != null) {
-				//text(rot.x + " " + rot.y + " " + rot.z, 400, 400);
-				rot.x = fix(rotX, rot.x);
-				rot.y = fix(rotY, rot.y);
-				rot.z = fix(rotZ, rot.z);
-				rotX = (rotX * 4 + rot.x) / 5;
-				//rotY = (rotY * 4 + rot.z) / 5;
-				rotZ = (rotZ * 4 + rot.y) / 5;
-			}
-		}
-		
+		List<PVector[]> candidates = fromVideo.getCandidates();
 		PImage img = fromVideo.getFrame();
+		
+		if (candidates != null && candidates.size() > 0) {
+			if (oldCorners != null) {				
+				float bestDist = Float.MAX_VALUE;
+				int bestIndex = -1;
+				for (int i = 0; i < candidates.size(); ++i) {
+					float d = BoardDetector.getDistance(oldCorners, candidates.get(i));
+					if (d < bestDist) {
+						bestDist = d;
+						bestIndex = i;
+					}
+				}									
+				oldCorners = candidates.get(0);
+			} else
+				oldCorners = candidates.get(0);	
+			
+			
+			TwoDThreeD t = new TwoDThreeD(img.width, img.height);
+			PVector rot = t.get3DRotations(Arrays.asList(oldCorners));
+				
+			if (rot != null) {
+				//text(degrees(rot.x) + " " + degrees(rot.y) + " " + degrees(rot.z), 200, 400);
+				rot.x = fix(rotX, rot.x);
+				//rot.y = fix(rotY, rot.y);
+				rot.z = fix(rotZ, rot.z);
+				rotX = (rotX * 31 + rot.x) / 32;
+				//	rotY = (rotY * 4 + rot.z) / 5;
+				rotZ = (rotZ * 31 + rot.y) / 32;
+			}
+		}		
+		
 		if (img != null) {			
-			//img.resize(img.width / 2, img.height / 2);
-			//image(img,  0,  0);
-			PVector[] corners = fromVideo.getCorners();
-
+			img.resize(img.width / 2, img.height / 2);
+			image(img,  0,  0);			
+			if (oldCorners != null) {
+				for (PVector p : oldCorners) {				
+					fill(255, 128, 0);
+					ellipse(p.x/2, p.y/2, 10, 10);
+				}
+			}
 		}
 		
 		drawSurface();

@@ -1,17 +1,20 @@
 package cs211.imageprocessing;
 
 import java.util.Arrays;
+import java.util.List;
+
 import processing.core.PApplet;
 import processing.core.PImage;
 import processing.core.PVector;
 import processing.video.Movie;
 
-public class RotationFromVideo implements RotationProvider {
+public class RotationFromVideo {
 
 	PApplet parent;
 	Movie video;	
 	BoardDetector detector;
-	
+	volatile boolean loop;
+	volatile List<PVector[]> corners;
 	Thread detectorThread;
 
 	public RotationFromVideo(PApplet parent, String fileName) {		
@@ -20,9 +23,7 @@ public class RotationFromVideo implements RotationProvider {
 		detector = new BoardDetector(parent);
 	}
 	
-	volatile PVector[] corners;
-	
-	public PVector[] getCorners() {
+	public List<PVector[]> getCandidates() {
 		return corners;
 	}
 	
@@ -36,27 +37,35 @@ public class RotationFromVideo implements RotationProvider {
 	}
 	
 	public void loop() {
+		detectorThread = new Thread(new Detector());
+		loop = true;
 		video.loop();
+		detectorThread.start();
 	}
 	
 	public void stop() {
-		video.stop();
+		loop = false;
+		try {
+			detectorThread.join();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
-	PVector rotation;
-
-	@Override
-	public PVector getRotation() {
-		PImage img = getFrame();
-		if (img == null)
-			return rotation;
-		PVector[] newCorners = detector.getCorners(img);
-		if (newCorners == null)
-			return rotation;
-		corners = newCorners;
-		TwoDThreeD t = new TwoDThreeD(img.width, img.height);
-		rotation = t.get3DRotations(Arrays.asList(corners));
-		return rotation;
+	class Detector implements Runnable {
+		@Override
+		public void run() {
+			while (loop) {
+				PImage img = getFrame();
+				if (img == null)
+					continue ;
+				List<PVector[]> newCorners = detector.getCorners(img);
+				if (newCorners == null)
+					continue ;
+				corners = newCorners;
+			}			
+		}
 	}
 }
 

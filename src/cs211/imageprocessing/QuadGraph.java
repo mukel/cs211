@@ -10,7 +10,6 @@ public class QuadGraph {
     int[][] graph;
 
     public void build(List<PVector> lines, int width, int height) {
-
         int n = lines.size();
 
         // The maximum possible number of edges is sum(0..n) = n * (n + 1)/2
@@ -21,7 +20,6 @@ public class QuadGraph {
         for (int i = 0; i < lines.size(); i++) {
             for (int j = i + 1; j < lines.size(); j++) {
                 if (intersect(lines.get(i), lines.get(j), width, height)) {
-
                     // TODO
                     // fill the graph using intersect() to check if two lines are
                     // connected in the graph.
@@ -34,7 +32,6 @@ public class QuadGraph {
                 }
             }
         }
-
     }
 
     /**
@@ -262,7 +259,7 @@ public class QuadGraph {
     public static boolean nonFlatQuad(PVector c1, PVector c2, PVector c3, PVector c4) {
 
         // cos(70deg) ~= 0.3
-        float min_cos = 0.8f;
+        float min_cos = 0.85f;
 
         PVector v21 = PVector.sub(c1, c2);
         PVector v32 = PVector.sub(c2, c3);
