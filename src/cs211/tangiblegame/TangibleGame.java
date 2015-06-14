@@ -5,18 +5,19 @@ package cs211.tangiblegame;
 * @author Mbanga Ndjock Pierre Armel 229047
 */
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
-import cs211.imageprocessing.BoardDetector;
+import processing.core.PApplet;
+import processing.core.PFont;
+import processing.core.PGraphics;
+import processing.core.PImage;
+import processing.core.PShape;
+import processing.core.PVector;
+import processing.event.MouseEvent;
 import cs211.imageprocessing.RotationFix;
 import cs211.imageprocessing.RotationFromVideo;
 import cs211.imageprocessing.RotationProvider;
-import cs211.imageprocessing.RotationSmoother;
-import processing.event.MouseEvent;
-
-
-
-import processing.core.*;
 
 public class TangibleGame extends PApplet{
 	
@@ -897,7 +898,7 @@ public class TangibleGame extends PApplet{
 	}
 	
 	public static void main(String[] args) {
-		PApplet.main(TangibleGame.class.getName());
+		PApplet.main(TangibleGame.class.getCanonicalName());
 	}
 	class HScrollbar {
 		  float barWidth;  //Bar's width in pixels
