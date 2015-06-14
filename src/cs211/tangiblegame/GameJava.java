@@ -120,7 +120,7 @@ public class GameJava extends PApplet{
 		ball = new Ball();
 		
 
-		lightHouse = loadShape("models/Lighthouse_7.obj");
+		lightHouse = loadShape("models/Lighthouse.obj");
 		lightHouse.rotateX(PI);
 		
 		
@@ -269,9 +269,6 @@ public class GameJava extends PApplet{
 			  {
 				  rotX = PI/3;
 			  }
-
-			  gravity.x = gravityConst*sin(rotZ);
-			  gravity.z = -gravityConst*sin(rotX);
 
 		}
 	}
@@ -543,6 +540,11 @@ public class GameJava extends PApplet{
 		 */
 		void update()
 		{
+
+			gravity.x = gravityConst*sin(rotZ);
+			gravity.z = -gravityConst*sin(rotX);
+
+			
 			friction = velocity.get();
 			
 			
