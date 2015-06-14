@@ -391,7 +391,7 @@ public class TangibleGame extends PApplet{
 		else
 		{
 			stroke(10);
-			fill(0,128,255);
+			fill(0,51,102);
 			box(boxWidth, boxDepth, boxHeight);
 						
 		}
@@ -444,10 +444,9 @@ public class TangibleGame extends PApplet{
 		{
 			PVector cylinder = cyliderPos.get(i).shapelocation;
 			newLocation = topViwLocation(cylinder.x, cylinder.z);
+					
 			
-			
-			
-			topViw.fill(240);
+			topViw.fill(102, 51, 0);
 			topViw.ellipse(newLocation.x, newLocation.y, 4*newCylinderRadius, 4*newCylinderRadius);
 		}
 	
