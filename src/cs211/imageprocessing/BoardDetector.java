@@ -52,7 +52,7 @@ public class BoardDetector {
         
 
         List<PVector> lines = ip.hough(img, 6);
-        System.out.println("Lines found = " + lines.size());
+        //System.out.println("Lines found = " + lines.size());
         if (lines.size() < 4)
             return null;
 
